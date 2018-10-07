@@ -34,7 +34,7 @@ train_steps_per_epoch = 8221 // batch_size
 valid_steps_per_epoch = 2001 // batch_size
 training_dir = "training_data/"
 validation_dir = "validation_data/"
-saved_model = "result/"
+saved_model = "result/weights.h5"
 if not os.path.exists(saved_model):
     os.makedirs(saved_model)
 
