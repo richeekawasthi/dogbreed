@@ -20,9 +20,16 @@ def load_data(image_dir, labels_file, classes_file):
 	labels = []
 	error = []
 	for image in images:
-		try:
-			labels.append(labels_dict[image.split(".")[0]])
-		except:
-			error.append(image)
-	return images, labels, error
+		labels.append(labels_dict[image.split(".")[0]])
+	images = [os.path.join(image_dir,image) for image in images]
+	return images, labels
 
+'''class Batcher(object):
+
+	def __init__(self, image_dir, labels_file="", classes_file, mode="TRAIN"):
+		self.mode = mode
+		if(self.mode=="TRAIN"):
+			self.images, self.labels = load_data(image_dir,labels_file,classes_file)
+		else:
+			self.images = [os.path.join(image_dir,image) for image in os.listdir(image_dir)]
+'''
