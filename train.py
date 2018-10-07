@@ -1,5 +1,7 @@
 import keras
+from keras.preprocessing.image import ImageDataGenerator
 import numpy as np
+import os
 
 def preprocessing_fn(img):
 	img = img/255.0
@@ -12,8 +14,13 @@ def create_graph(num_classes):
 	penultimate = keras.layers.GlobalAveragePooling2D()(base.output)
 	logits = keras.layers.Dense(num_classes, activation='softmax')(penultimate)
 	model = keras.models.Model(input=base.input, output=logits)
-	print("#######\nInput Tensor : "+base.input+"\n#######")
-	print("#######\nOutput Tensor : "+logits+"\n#######")
+	print("###################################################")
+	print(base.input)
+	print("###################################################")
+	print("###################################################")
+	print(logits)
+	print("###################################################")
+	return model
 
 ###################HYPERPARAMETERS#########################
 
@@ -23,7 +30,8 @@ num_epochs = 50
 learning_rate = 1e-3
 decay = 1e-6
 momentum = 0.9
-pretrained_weights = ""
+train_steps_per_epoch = 8221 // batch_size
+valid_steps_per_epoch = 2001 // batch_size
 training_dir = "training_data/"
 validation_dir = "validation_data/"
 saved_model = "result/"
@@ -34,20 +42,20 @@ if not os.path.exists(saved_model):
 
 
 graph = create_graph(num_classes)
-train_generator = keras.preprocessing.Image.ImageDataGenerator(preprocessing_function=preprocessing_fn,
+tr_generator = ImageDataGenerator(preprocessing_function=preprocessing_fn,
 																width_shift_range=0.2,
 																height_shift_range=0.2,
 																horizontal_flip=True)
-train_generator = train_generator.flow_from_directory(training_dir,target_size=(299,299),batch_size=batch_size,class_mode='categorical')
-valid_generator = keras.preprocessing.Image.ImageDataGenerator(preprocessing_function=preprocessing_fn)
-train_generator = train_generator.flow_from_directory(validation_dir,target_size=(299,299),batch_size=batch_size,class_mode='categorical')
+train_generator = tr_generator.flow_from_directory(training_dir,target_size=(299,299),batch_size=batch_size,class_mode='categorical')
+val_generator = ImageDataGenerator(preprocessing_function=preprocessing_fn)
+valid_generator = val_generator.flow_from_directory(validation_dir,target_size=(299,299),batch_size=batch_size,class_mode='categorical')
 
 optimizer = keras.optimizers.SGD(lr=learning_rate,decay=decay,momentum=momentum)
-model.compile(optimizer=optimizer,loss='categorical_crossentropy', metrics=['accuracy'])
+graph.compile(optimizer=optimizer,loss='categorical_crossentropy', metrics=['accuracy'])
 
 checkpoint = keras.callbacks.ModelCheckpoint(saved_model,monitor='loss',verbose=1,save_best_only=True,mode='max')
 callbacks_list = [checkpoint]
 
-model.fit_generator(train_generator,epochs=num_epochs,steps_per_epochs=train_steps_per_epoch,validation_data=valid_generator,
+graph.fit_generator(train_generator,epochs=num_epochs,steps_per_epoch=train_steps_per_epoch,validation_data=valid_generator,
 			validation_steps=valid_steps_per_epoch,callbacks=callbacks_list)
-model.save_weights(saved_model)
+graph.save_weights(saved_model)
