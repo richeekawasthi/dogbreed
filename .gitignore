@@ -1,2 +1,5 @@
 train/*
 test/*
+__pychache__/*
+training_data/*
+validation_data/*
