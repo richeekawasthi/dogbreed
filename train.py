@@ -25,7 +25,7 @@ def create_graph(num_classes):
 ###################HYPERPARAMETERS#########################
 
 num_classes = 120
-batch_size = 5
+batch_size = 128
 num_epochs = 50
 learning_rate = 1e-3
 decay = 1e-6
@@ -46,16 +46,16 @@ tr_generator = ImageDataGenerator(preprocessing_function=preprocessing_fn,
 																width_shift_range=0.2,
 																height_shift_range=0.2,
 																horizontal_flip=True)
-train_generator = tr_generator.flow_from_directory(training_dir,target_size=(299,299),batch_size=batch_size,class_mode='categorical')
+train_generator = tr_generator.flow_from_directory(training_dir,target_size=(299,299),batch_size=batch_size,class_mode='binary')
 val_generator = ImageDataGenerator(preprocessing_function=preprocessing_fn)
-valid_generator = val_generator.flow_from_directory(validation_dir,target_size=(299,299),batch_size=batch_size,class_mode='categorical')
+valid_generator = val_generator.flow_from_directory(validation_dir,target_size=(299,299),batch_size=batch_size,class_mode='binary')
 
 optimizer = keras.optimizers.SGD(lr=learning_rate,decay=decay,momentum=momentum)
-graph.compile(optimizer=optimizer,loss='categorical_crossentropy', metrics=['accuracy'])
+graph.compile(optimizer=optimizer,loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-checkpoint = keras.callbacks.ModelCheckpoint(saved_model,monitor='loss',verbose=1,save_best_only=True,mode='max')
-callbacks_list = [checkpoint]
+#checkpoint = keras.callbacks.ModelCheckpoint(saved_model,monitor='loss',verbose=1,save_best_only=True,mode='max')
+#callbacks_list = [checkpoint]
 
 graph.fit_generator(train_generator,epochs=num_epochs,steps_per_epoch=train_steps_per_epoch,validation_data=valid_generator,
-			validation_steps=valid_steps_per_epoch,callbacks=callbacks_list)
+			validation_steps=valid_steps_per_epoch)
 graph.save_weights(saved_model)
